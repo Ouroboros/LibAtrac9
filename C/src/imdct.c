@@ -3,12 +3,12 @@
 
 static void Dct4(Mdct* mdct, double* input, double* output);
 
-void RunImdct(Mdct* mdct, double* input, double* output)
+void RunImdct(Atrac9Handle* handle, Mdct* mdct, double* input, double* output)
 {
 	const int size = 1 << mdct->Bits;
 	const int half = size / 2;
 	double dctOut[MAX_FRAME_SAMPLES];
-	const double* window = ImdctWindow[mdct->Bits - 6];
+	const double* window = handle->ImdctWindow[mdct->Bits - 6];
 	double* previous = mdct->ImdctPrevious;
 
 	Dct4(mdct, input, dctOut);

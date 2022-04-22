@@ -18,19 +18,31 @@ static void InitHuffmanCodebooks();
 static void InitHuffmanSet(const HuffmanCodebook* codebooks, int count);
 static void GenerateTrigTables(int sizeBits);
 static void GenerateShuffleTable(int sizeBits);
-static void InitMdctTables(int frameSizePower);
-static void GenerateMdctWindow(int frameSizePower);
-static void GenerateImdctWindow(int frameSizePower);
+static void InitMdctTables();
+static void GenerateMdctWindow(Atrac9Handle* handle, int frameSizePower);
+static void GenerateImdctWindow(Atrac9Handle* handle, int frameSizePower);
 
 static int BlockTypeToChannelCount(BlockType blockType);
+
+void InitTables()
+{
+	InitMdctTables();
+	InitHuffmanCodebooks();
+	GenerateGradientCurves();
+}
 
 At9Status InitDecoder(Atrac9Handle* handle, unsigned char* configData, int wlength)
 {
 	ERROR_CHECK(InitConfigData(&handle->Config, configData));
 	ERROR_CHECK(InitFrame(handle));
-	InitMdctTables(handle->Config.FrameSamplesPower);
-	InitHuffmanCodebooks();
-	GenerateGradientCurves();
+	
+    //InitMdctTables(handle->Config.FrameSamplesPower);
+
+	GenerateMdctWindow(handle, handle->Config.FrameSamplesPower);
+	GenerateImdctWindow(handle, handle->Config.FrameSamplesPower);
+
+	//InitHuffmanCodebooks();
+	//GenerateGradientCurves();
 	handle->Wlength = wlength;
 	handle->Initialized = 1;
 	return ERR_SUCCESS;
@@ -135,15 +147,16 @@ static void InitHuffmanSet(const HuffmanCodebook* codebooks, int count)
 	}
 }
 
-static void InitMdctTables(int frameSizePower)
+static void InitMdctTables()
 {
 	for (int i = 0; i < 9; i++)
 	{
 		GenerateTrigTables(i);
 		GenerateShuffleTable(i);
 	}
-	GenerateMdctWindow(frameSizePower);
-	GenerateImdctWindow(frameSizePower);
+
+	//GenerateMdctWindow(frameSizePower);
+	//GenerateImdctWindow(frameSizePower);
 }
 
 static void GenerateTrigTables(int sizeBits)
@@ -171,10 +184,10 @@ static void GenerateShuffleTable(int sizeBits)
 	}
 }
 
-static void GenerateMdctWindow(int frameSizePower)
+static void GenerateMdctWindow(Atrac9Handle* handle, int frameSizePower)
 {
 	const int frameSize = 1 << frameSizePower;
-	double* mdct = MdctWindow[frameSizePower - 6];
+	double* mdct = handle->MdctWindow[frameSizePower - 6];
 
 	for (int i = 0; i < frameSize; i++)
 	{
@@ -182,11 +195,11 @@ static void GenerateMdctWindow(int frameSizePower)
 	}
 }
 
-static void GenerateImdctWindow(int frameSizePower)
+static void GenerateImdctWindow(Atrac9Handle* handle, int frameSizePower)
 {
 	const int frameSize = 1 << frameSizePower;
-	double* imdct = ImdctWindow[frameSizePower - 6];
-	double* mdct = MdctWindow[frameSizePower - 6];
+	double* imdct = handle->ImdctWindow[frameSizePower - 6];
+	double* mdct = handle->MdctWindow[frameSizePower - 6];
 
 	for (int i = 0; i < frameSize; i++)
 	{

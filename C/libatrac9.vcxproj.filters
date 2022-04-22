@@ -101,5 +101,13 @@
     <ClCompile Include="src\tables.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libatrac9.def">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

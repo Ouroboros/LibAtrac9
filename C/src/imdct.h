@@ -2,4 +2,4 @@
 
 #include "structures.h"
 
-void RunImdct(Mdct* mdct, double* input, double* output);
+void RunImdct(Atrac9Handle* handle, Mdct* mdct, double* input, double* output);

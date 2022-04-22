@@ -13,6 +13,8 @@ extern "C" {
 #define DLLEXPORT
 #endif
 
+#define LIBATRAC9_API __stdcall
+
 #define ATRAC9_CONFIG_DATA_SIZE 4
 
 typedef struct {
@@ -26,13 +28,16 @@ typedef struct {
 	unsigned char configData[ATRAC9_CONFIG_DATA_SIZE];
 } Atrac9CodecInfo;
 
-DLLEXPORT void* Atrac9GetHandle(void);
-DLLEXPORT void Atrac9ReleaseHandle(void* handle);
+void* LIBATRAC9_API Atrac9GetHandle(void);
+void LIBATRAC9_API Atrac9ReleaseHandle(void* handle);
 
-DLLEXPORT int Atrac9InitDecoder(void* handle, unsigned char *pConfigData);
-DLLEXPORT int Atrac9Decode(void* handle, const unsigned char *pAtrac9Buffer, short *pPcmBuffer, int *pNBytesUsed);
+int LIBATRAC9_API Atrac9InitDecoder(void* handle, unsigned char *pConfigData);
+int LIBATRAC9_API Atrac9Decode(void* handle, const unsigned char *pAtrac9Buffer, short *pPcmBuffer, int *pNBytesUsed);
 
-DLLEXPORT int Atrac9GetCodecInfo(void* handle, Atrac9CodecInfo *pCodecInfo);
+int LIBATRAC9_API Atrac9GetCodecInfo(void* handle, Atrac9CodecInfo *pCodecInfo);
+
+int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** outputBuffer, int *outputSize, int* wfxFormatOffset, int* dataOffset);
+void LIBATRAC9_API Atrac9FreeBuffer(void* buffer);
 
 #ifdef __cplusplus
 }

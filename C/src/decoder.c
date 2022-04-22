@@ -8,8 +8,8 @@
 #include "utility.h"
 #include <string.h>
 
-static At9Status DecodeFrame(Frame* frame, BitReaderCxt* br);
-static void ImdctBlock(Block* block);
+static At9Status DecodeFrame(Atrac9Handle* handle, Frame* frame, BitReaderCxt* br);
+static void ImdctBlock(Atrac9Handle* handle, Block* block);
 static void ApplyIntensityStereo(Block* block);
 static void PcmFloatToShort(Frame* frame, short* pcmOut);
 
@@ -17,7 +17,7 @@ At9Status Decode(Atrac9Handle* handle, const unsigned char* audio, unsigned char
 {
 	BitReaderCxt br;
 	InitBitReaderCxt(&br, audio);
-	ERROR_CHECK(DecodeFrame(&handle->Frame, &br));
+	ERROR_CHECK(DecodeFrame(handle, &handle->Frame, &br));
 
 	PcmFloatToShort(&handle->Frame, (short*)pcm);
 
@@ -25,7 +25,7 @@ At9Status Decode(Atrac9Handle* handle, const unsigned char* audio, unsigned char
 	return ERR_SUCCESS;
 }
 
-static At9Status DecodeFrame(Frame* frame, BitReaderCxt* br)
+static At9Status DecodeFrame(Atrac9Handle* handle, Frame* frame, BitReaderCxt* br)
 {
 	ERROR_CHECK(UnpackFrame(frame, br));
 
@@ -37,7 +37,7 @@ static At9Status DecodeFrame(Frame* frame, BitReaderCxt* br)
 		ApplyIntensityStereo(block);
 		ScaleSpectrumBlock(block);
 		ApplyBandExtension(block);
-		ImdctBlock(block);
+		ImdctBlock(handle, block);
 	}
 
 	return ERR_SUCCESS;
@@ -59,13 +59,13 @@ void PcmFloatToShort(Frame* frame, short* pcmOut)
 	}
 }
 
-static void ImdctBlock(Block* block)
+static void ImdctBlock(Atrac9Handle* handle, Block* block)
 {
 	for (int i = 0; i < block->ChannelCount; i++)
 	{
 		Channel* channel = &block->Channels[i];
 
-		RunImdct(&channel->Mdct, channel->Spectra, channel->Pcm);
+		RunImdct(handle, &channel->Mdct, channel->Spectra, channel->Pcm);
 	}
 }
 

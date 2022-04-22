@@ -19,8 +19,8 @@ extern const double QuantizerInverseStepSize[16];
 extern const double QuantizerStepSize[16];
 extern const double QuantizerFineStepSize[16];
 
-extern double MdctWindow[3][256];
-extern double ImdctWindow[3][256];
+//extern double MdctWindow[3][256];
+//extern double ImdctWindow[3][256];
 extern double SinTables[9][256];
 extern double CosTables[9][256];
 extern int ShuffleTables[9][256];

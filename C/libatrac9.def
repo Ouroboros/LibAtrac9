@@ -1,0 +1,8 @@
+EXPORTS
+	Atrac9GetHandle
+	Atrac9ReleaseHandle
+	Atrac9InitDecoder
+	Atrac9Decode
+	Atrac9GetCodecInfo
+	Atrac9DecodeBuffer
+	Atrac9FreeBuffer

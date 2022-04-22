@@ -141,6 +141,8 @@ typedef struct {
 	int Wlength;
 	ConfigData Config;
 	Frame Frame;
+    double MdctWindow[3][256];
+    double ImdctWindow[3][256];
 } Atrac9Handle;
 
 typedef struct {
