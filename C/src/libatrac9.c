@@ -26,9 +26,9 @@ int LIBATRAC9_API Atrac9Decode(void* handle, const unsigned char *pAtrac9Buffer,
 	return Decode(handle, pAtrac9Buffer, (unsigned char*)pPcmBuffer, pNBytesUsed);
 }
 
-int LIBATRAC9_API Atrac9GetCodecInfo(void* handle, Atrac9CodecInfo * pCodecInfo)
+int LIBATRAC9_API Atrac9GetCodecInfo(void* handle, Atrac9ConfigData* pCodecInfo)
 {
-	return GetCodecInfo(handle, (CodecInfo*)pCodecInfo);
+	return GetCodecInfo(handle, pCodecInfo);
 }
 
 BOOL NTAPI DllMain(PVOID BaseAddress, ULONG Reason, PVOID Reserved)

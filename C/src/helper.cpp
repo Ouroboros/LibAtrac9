@@ -45,7 +45,7 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
     PVOID               handle;
     PBYTE               buffer, end;
     PBYTE               configData;
-    Atrac9CodecInfo     info;
+    Atrac9ConfigData    info;
     PBYTE               data;
     PAT9_FACT_CHUNK     factChunk;
     PWAVE_CHUNK_HEADER  chunk;
@@ -112,10 +112,25 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
     if (result != 0)
         goto CLEANUP;
 
+    // printf("SampleRateIndex             = %d\n", info.SampleRateIndex);
+    // printf("ChannelConfigIndex          = %d\n", info.ChannelConfigIndex);
+    // printf("FrameBytes                  = %d\n", info.FrameBytes);
+    // printf("SuperframeIndex             = %d\n", info.SuperframeIndex);
+    // printf("ChannelConfig.BlockCount    = %d\n", info.ChannelConfig.BlockCount);
+    // printf("ChannelConfig.ChannelCount  = %d\n", info.ChannelConfig.ChannelCount);
+    // printf("ChannelCount                = %d\n", info.ChannelCount);
+    // printf("SampleRate                  = %d\n", info.SampleRate);
+    // printf("HighSampleRate              = %d\n", info.HighSampleRate);
+    // printf("FramesPerSuperframe         = %d\n", info.FramesPerSuperframe);
+    // printf("FrameSamplesPower           = %d\n", info.FrameSamplesPower);
+    // printf("FrameSamples                = %d\n", info.FrameSamples);
+    // printf("SuperframeBytes             = %d\n", info.SuperframeBytes);
+    // printf("SuperframeSamples           = %d\n", info.SuperframeSamples);
+
     PWAV_HEADER wavheader;
     ULONG       sampleCount = factChunk->SampleCount;
-    ULONG       superframeSamples = info.frameSamples * info.framesInSuperframe;
-    ULONG       pcmBufferSize = (factChunk->SampleCount + factChunk->EncoderDelaySamples + superframeSamples) * sizeof(SHORT) * info.channels + sizeof(*wavheader);
+    ULONG       superframeSamples = info.FrameSamples * info.FramesPerSuperframe;
+    ULONG       pcmBufferSize = (factChunk->SampleCount + factChunk->EncoderDelaySamples + superframeSamples) * sizeof(SHORT) * info.ChannelCount + sizeof(*wavheader);
     PSHORT      pcmBuffer = (PSHORT)malloc(pcmBufferSize);
 
     wavheader = (PWAV_HEADER)pcmBuffer;
@@ -124,47 +139,29 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
 
     ULONG samples = 0;
 
-    for (ULONG frameIndex = 0; data < end; frameIndex++)
+    for (ULONG superFrameIndex = 0; data < end; )
     {
         ULONG bytesRead;
-        result = Atrac9Decode(handle, data, out, (PINT)&bytesRead);
+
+        result = 0;
+        PBYTE p = data;
+        for (ULONG i = 0; i != info.FramesPerSuperframe; i++)
+        {
+            result = Atrac9Decode(handle, p, out, (PINT)&bytesRead);
+            if (result != 0)
+                break;
+
+            p += bytesRead;
+            out += info.FrameSamples * info.ChannelCount;
+            samples += info.FrameSamples * info.ChannelCount;
+
+            //printf("frame: %d offset: %X superframeSize: %X samples: 0x%X %d / %d\n", superFrameIndex++, p - buffer, info.SuperframeBytes, samples - factChunk->EncoderDelaySamples, samples - factChunk->EncoderDelaySamples, sampleCount);
+        }
+
         if (result != 0)
             break;
 
-        out += info.frameSamples;
-        data += bytesRead;
-        samples += info.frameSamples;
-
-        //printf("offset: %X superframeSize: %X samples: 0x%X %d / %d\n", data - buffer, info.superframeSize, samples - factChunk->EncoderDelaySamples, samples - factChunk->EncoderDelaySamples, sampleCount);
-
-        ULONG remainning = end - data;
-
-        if (remainning >= 4 && *(PULONG)data == 0x01010101)
-            break;
-
-        switch (remainning)
-        {
-            case 1:
-                if (data[0] == 0x01)
-                    break;
-                continue;
-                
-            case 2:
-                if (*(PUSHORT)data == 0x0101)
-                    break;
-                continue;
-
-            case 3:
-                if ((*(PULONG)data & 0x00FFFFFF) == 0x010101)
-                    break;
-
-                continue;
-
-            default:
-                continue;
-        }
-
-        break;
+        data += info.FrameBytes * info.FramesPerSuperframe;
     }
 
     if (result < 0)
@@ -173,7 +170,7 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
     }
     else
     {
-        ULONG dataSize = (PBYTE)(out - info.frameSamples) - (PBYTE)pcmBuffer;
+        ULONG dataSize = (PBYTE)(out - info.FrameSamples) - (PBYTE)pcmBuffer;
 
         wavheader->RIFF             = CHUNK_RIFF;
         wavheader->Size             = sizeof(*wavheader) - 8 + dataSize;
@@ -181,9 +178,9 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
         wavheader->fmt              = CHUNK_FMT;
         wavheader->FormatLength     = 0x10;
         wavheader->FormatTag        = 0x01;
-        wavheader->Channels         = info.channels;
-        wavheader->SamplesPerSec    = info.samplingRate;
-        wavheader->AvgBytesPerSec   = info.samplingRate * sizeof(SHORT);
+        wavheader->Channels         = info.ChannelCount;
+        wavheader->SamplesPerSec    = info.SampleRate;
+        wavheader->AvgBytesPerSec   = info.SampleRate * sizeof(SHORT);
         wavheader->BlockAlign       = 2;
         wavheader->BitsPerSample    = 16;
         wavheader->data             = CHUNK_DATA;

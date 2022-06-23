@@ -97,15 +97,8 @@ static void ApplyIntensityStereo(Block* block)
 	}
 }
 
-int GetCodecInfo(Atrac9Handle* handle, CodecInfo * pCodecInfo)
+int GetCodecInfo(Atrac9Handle* handle, ConfigData* pCodecInfo)
 {
-	pCodecInfo->Channels = handle->Config.ChannelCount;
-	pCodecInfo->ChannelConfigIndex = handle->Config.ChannelConfigIndex;
-	pCodecInfo->SamplingRate = handle->Config.SampleRate;
-	pCodecInfo->SuperframeSize = handle->Config.SuperframeBytes;
-	pCodecInfo->FramesInSuperframe = handle->Config.FramesPerSuperframe;
-	pCodecInfo->FrameSamples = handle->Config.FrameSamples;
-	pCodecInfo->Wlength = handle->Wlength;
-	memcpy(pCodecInfo->ConfigData, handle->Config.ConfigData, CONFIG_DATA_SIZE);
+    *pCodecInfo = handle->Config;
 	return ERR_SUCCESS;
 }

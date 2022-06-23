@@ -17,16 +17,9 @@ extern "C" {
 
 #define ATRAC9_CONFIG_DATA_SIZE 4
 
-typedef struct {
-	int channels;
-	int channelConfigIndex;
-	int samplingRate;
-	int superframeSize;
-	int framesInSuperframe;
-	int frameSamples;
-	int wlength;
-	unsigned char configData[ATRAC9_CONFIG_DATA_SIZE];
-} Atrac9CodecInfo;
+#include "structures.h"
+
+typedef ConfigData Atrac9ConfigData;
 
 void* LIBATRAC9_API Atrac9GetHandle(void);
 void LIBATRAC9_API Atrac9ReleaseHandle(void* handle);
@@ -34,7 +27,7 @@ void LIBATRAC9_API Atrac9ReleaseHandle(void* handle);
 int LIBATRAC9_API Atrac9InitDecoder(void* handle, unsigned char *pConfigData);
 int LIBATRAC9_API Atrac9Decode(void* handle, const unsigned char *pAtrac9Buffer, short *pPcmBuffer, int *pNBytesUsed);
 
-int LIBATRAC9_API Atrac9GetCodecInfo(void* handle, Atrac9CodecInfo *pCodecInfo);
+int LIBATRAC9_API Atrac9GetCodecInfo(void* handle, Atrac9ConfigData *pCodecInfo);
 
 int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** outputBuffer, int *outputSize, int* wfxFormatOffset, int* dataOffset);
 void LIBATRAC9_API Atrac9FreeBuffer(void* buffer);
