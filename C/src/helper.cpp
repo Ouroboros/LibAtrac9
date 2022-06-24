@@ -161,7 +161,7 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
         if (result != 0)
             break;
 
-        data += info.FrameBytes * info.FramesPerSuperframe;
+        data += info.SuperframeBytes;
     }
 
     if (result < 0)
