@@ -138,6 +138,7 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
     PSHORT out = (PSHORT)(wavheader + 1);
 
     ULONG samples = 0;
+    ULONG frameSamples = info.FrameSamples * info.ChannelCount;
 
     for (ULONG superFrameIndex = 0; data < end; )
     {
@@ -152,8 +153,8 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
                 break;
 
             p += bytesRead;
-            out += info.FrameSamples * info.ChannelCount;
-            samples += info.FrameSamples * info.ChannelCount;
+            out += frameSamples;
+            samples += frameSamples;
 
             //printf("frame: %d offset: %X superframeSize: %X samples: 0x%X %d / %d\n", superFrameIndex++, p - buffer, info.SuperframeBytes, samples - factChunk->EncoderDelaySamples, samples - factChunk->EncoderDelaySamples, sampleCount);
         }
@@ -170,7 +171,7 @@ int LIBATRAC9_API Atrac9DecodeBuffer(void* at9Buffer, int at9BufferSize, void** 
     }
     else
     {
-        ULONG dataSize = (PBYTE)(out - info.FrameSamples) - (PBYTE)pcmBuffer;
+        ULONG dataSize = (PBYTE)(out - frameSamples) - (PBYTE)pcmBuffer;
 
         wavheader->RIFF             = CHUNK_RIFF;
         wavheader->Size             = sizeof(*wavheader) - 8 + dataSize;
